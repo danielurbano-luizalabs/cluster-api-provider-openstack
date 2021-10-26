@@ -21,6 +21,7 @@ spec:
         - /manager
         args:
         - "--leader-elect"
+        - "--feature-gates=MachinePool=${EXP_MACHINE_POOL:=false}"
         - "--v=2"
         image: controller:latest
         imagePullPolicy: Always

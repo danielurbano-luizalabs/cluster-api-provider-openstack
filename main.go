@@ -40,6 +40,7 @@ import (
 	infrav1old "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha3"
 	infrav1 "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha4"
 	"sigs.k8s.io/cluster-api-provider-openstack/controllers"
+	"sigs.k8s.io/cluster-api-provider-openstack/feature"
 	"sigs.k8s.io/cluster-api-provider-openstack/pkg/metrics"
 	"sigs.k8s.io/cluster-api-provider-openstack/pkg/record"
 	"sigs.k8s.io/cluster-api-provider-openstack/version"
@@ -121,6 +122,8 @@ func InitFlags(fs *pflag.FlagSet) {
 
 	fs.StringVar(&healthAddr, "health-addr", ":9440",
 		"The address the health endpoint binds to.")
+
+	feature.MutableGates.AddFlag(fs)
 }
 
 func main() {
@@ -175,6 +178,7 @@ func main() {
 	setupChecks(mgr)
 	setupReconcilers(ctx, mgr)
 	setupWebhooks(mgr)
+	setupGates()
 
 	// +kubebuilder:scaffold:builder
 	setupLog.Info("starting manager", "version", version.Get().String())
@@ -243,6 +247,12 @@ func setupWebhooks(mgr ctrl.Manager) {
 	if err := (&infrav1.OpenStackClusterList{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "OpenStackClusterList")
 		os.Exit(1)
+	}
+}
+
+func setupGates() {
+	if feature.Gates.Enabled(feature.MachinePool) {
+		setupLog.Info("enabling MachinePool")
 	}
 }
 
