@@ -1,0 +1,7 @@
+domain: exp.infrastructure.x-k8s.io
+repo: sigs.k8s.io/cluster-api-provider-openstack/exp
+version: "1"
+resources:
+- group: exp.infrastructure
+  kind: OpenStackMachinePool
+  version: v1alpha4

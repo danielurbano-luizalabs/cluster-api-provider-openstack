@@ -40,6 +40,8 @@ import (
 	infrav1old "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha3"
 	infrav1 "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha4"
 	"sigs.k8s.io/cluster-api-provider-openstack/controllers"
+	infrav1exp "sigs.k8s.io/cluster-api-provider-openstack/exp/api/v1alpha4"
+	controllersexp "sigs.k8s.io/cluster-api-provider-openstack/exp/controllers"
 	"sigs.k8s.io/cluster-api-provider-openstack/feature"
 	"sigs.k8s.io/cluster-api-provider-openstack/pkg/metrics"
 	"sigs.k8s.io/cluster-api-provider-openstack/pkg/record"
@@ -51,20 +53,21 @@ var (
 	setupLog = ctrl.Log.WithName("setup")
 
 	// flags.
-	metricsBindAddr             string
-	enableLeaderElection        bool
-	leaderElectionLeaseDuration time.Duration
-	leaderElectionRenewDeadline time.Duration
-	leaderElectionRetryPeriod   time.Duration
-	watchNamespace              string
-	watchFilterValue            string
-	profilerAddress             string
-	openStackClusterConcurrency int
-	openStackMachineConcurrency int
-	syncPeriod                  time.Duration
-	webhookPort                 int
-	webhookCertDir              string
-	healthAddr                  string
+	metricsBindAddr                 string
+	enableLeaderElection            bool
+	leaderElectionLeaseDuration     time.Duration
+	leaderElectionRenewDeadline     time.Duration
+	leaderElectionRetryPeriod       time.Duration
+	watchNamespace                  string
+	watchFilterValue                string
+	profilerAddress                 string
+	openStackClusterConcurrency     int
+	openStackMachineConcurrency     int
+	openStackMachinePoolConcurrency int
+	syncPeriod                      time.Duration
+	webhookPort                     int
+	webhookCertDir                  string
+	healthAddr                      string
 )
 
 func init() {
@@ -74,6 +77,7 @@ func init() {
 	_ = clusterv1.AddToScheme(scheme)
 	_ = infrav1.AddToScheme(scheme)
 	_ = infrav1old.AddToScheme(scheme)
+	_ = infrav1exp.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 
 	metrics.RegisterAPIPrometheusMetrics()
@@ -110,6 +114,9 @@ func InitFlags(fs *pflag.FlagSet) {
 
 	fs.IntVar(&openStackMachineConcurrency, "openstackmachine-concurrency", 10,
 		"Number of OpenStackMachines to process simultaneously")
+
+	fs.IntVar(&openStackMachinePoolConcurrency, "openstackmachinepool-concurrency", 10,
+		"Number of OpenStackMachinePools to process simultaneously")
 
 	fs.DurationVar(&syncPeriod, "sync-period", 10*time.Minute,
 		"The minimum interval at which watched resources are reconciled (e.g. 15m)")
@@ -178,7 +185,6 @@ func main() {
 	setupChecks(mgr)
 	setupReconcilers(ctx, mgr)
 	setupWebhooks(mgr)
-	setupGates()
 
 	// +kubebuilder:scaffold:builder
 	setupLog.Info("starting manager", "version", version.Get().String())
@@ -217,6 +223,17 @@ func setupReconcilers(ctx context.Context, mgr ctrl.Manager) {
 		setupLog.Error(err, "unable to create controller", "controller", "OpenStackMachine")
 		os.Exit(1)
 	}
+
+	if feature.Gates.Enabled(feature.MachinePool) {
+		if err := (&controllersexp.OpenStackMachinePoolReconciler{
+			Client:           mgr.GetClient(),
+			Recorder:         mgr.GetEventRecorderFor("openstackmachinepool-controller"),
+			WatchFilterValue: watchFilterValue,
+		}).SetupWithManager(ctx, mgr, concurrency(openStackMachinePoolConcurrency)); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "OpenStackMachinePool")
+			os.Exit(1)
+		}
+	}
 }
 
 func setupWebhooks(mgr ctrl.Manager) {
@@ -248,11 +265,12 @@ func setupWebhooks(mgr ctrl.Manager) {
 		setupLog.Error(err, "unable to create webhook", "webhook", "OpenStackClusterList")
 		os.Exit(1)
 	}
-}
 
-func setupGates() {
 	if feature.Gates.Enabled(feature.MachinePool) {
-		setupLog.Info("enabling MachinePool")
+		if err := (&infrav1exp.OpenStackMachinePool{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "OpenStackMachinePool")
+			os.Exit(1)
+		}
 	}
 }
 

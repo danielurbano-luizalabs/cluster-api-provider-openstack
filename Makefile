@@ -201,10 +201,16 @@ generate-go: $(MOCKGEN)
 	$(MAKE) -B $(CONTROLLER_GEN) $(CONVERSION_GEN) $(DEFAULTER_GEN)
 	$(CONTROLLER_GEN) \
 		paths=./api/... \
+		paths=./exp/api/... \
 		object:headerFile=./hack/boilerplate/boilerplate.generatego.txt
 
 	$(CONVERSION_GEN) \
 		--input-dirs=./api/v1alpha4 \
+		--output-file-base=zz_generated.conversion \
+		--go-header-file=./hack/boilerplate/boilerplate.generatego.txt
+
+	$(CONVERSION_GEN) \
+		--input-dirs=./exp/api/v1alpha4 \
 		--output-file-base=zz_generated.conversion \
 		--go-header-file=./hack/boilerplate/boilerplate.generatego.txt
 
