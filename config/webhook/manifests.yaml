@@ -1,5 +1,32 @@
 
 ---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: mutating-webhook-configuration
+webhooks:
+- clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-exp-cluster-x-k8s-io-x-k8s-io-v1alpha4-openstackmachinepool
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: default.openstackmachinepool.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - exp.cluster.x-k8s.io.x-k8s.io
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - openstackmachinepools
+
+---
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
@@ -161,3 +188,24 @@ webhooks:
     resources:
     - openstackmachinetemplates
   sideEffects: None
+- admissionReviewVersions:
+  - v1beta1
+  - clientConfig:
+    caBundle: Cg==
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-exp-cluster-x-k8s-io-x-k8s-io-v1alpha4-openstackmachinepool
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  name: validation.openstackmachinepool.infrastructure.cluster.x-k8s.io
+  rules:
+  - apiGroups:
+    - exp.cluster.x-k8s.io.x-k8s.io
+    apiVersions:
+    - v1alpha4
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - openstackmachinepools
