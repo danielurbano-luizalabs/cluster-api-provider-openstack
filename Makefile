@@ -28,6 +28,7 @@ ARTIFACTS ?= $(REPO_ROOT)/_artifacts
 TOOLS_DIR := hack/tools
 TOOLS_DIR_DEPS := $(TOOLS_DIR)/go.sum $(TOOLS_DIR)/go.mod $(TOOLS_DIR)/Makefile
 TOOLS_BIN_DIR := $(TOOLS_DIR)/bin
+EXP_DIR := exp
 
 BIN_DIR := bin
 REPO_ROOT := $(shell git rev-parse --show-toplevel)
@@ -201,7 +202,7 @@ generate-go: $(MOCKGEN)
 	$(MAKE) -B $(CONTROLLER_GEN) $(CONVERSION_GEN) $(DEFAULTER_GEN)
 	$(CONTROLLER_GEN) \
 		paths=./api/... \
-		paths=./exp/api/... \
+		paths=./$(EXP_DIR)/api/... \
 		object:headerFile=./hack/boilerplate/boilerplate.generatego.txt
 
 	$(CONVERSION_GEN) \
@@ -210,7 +211,7 @@ generate-go: $(MOCKGEN)
 		--go-header-file=./hack/boilerplate/boilerplate.generatego.txt
 
 	$(CONVERSION_GEN) \
-		--input-dirs=./exp/api/v1alpha4 \
+		--input-dirs=./$(EXP_DIR)/api/v1alpha4 \
 		--output-file-base=zz_generated.conversion \
 		--go-header-file=./hack/boilerplate/boilerplate.generatego.txt
 
