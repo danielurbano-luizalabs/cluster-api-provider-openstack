@@ -14,11 +14,15 @@ limitations under the License.
 package v1alpha4
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime"
-	kerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
+
+	infrav1 "sigs.k8s.io/cluster-api-provider-openstack/api/v1alpha4"
 )
 
 // log is for logging in this package.
@@ -46,42 +50,34 @@ var _ webhook.Validator = &OpenStackMachinePool{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (omp *OpenStackMachinePool) ValidateCreate() error {
 	openstackmachinepoollog.Info("validate create", "name", omp.Name)
-	return omp.Validate()
+
+	var allErrs field.ErrorList
+
+	if omp.Spec.Template.Spec.Template.Spec.ProviderID != nil {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec", "template", "spec", "template", "spec", "providerID"), "cannot be set in templates"))
+	}
+
+	return aggregateObjErrors(omp.GroupVersionKind().GroupKind(), omp.Name, allErrs)
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (omp *OpenStackMachinePool) ValidateUpdate(old runtime.Object) error {
+	var allErrs field.ErrorList
 	openstackmachinepoollog.Info("validate update", "name", omp.Name)
-	return omp.Validate()
+
+	oldOpenStackMachinePool := old.(*OpenStackMachinePool)
+
+	if !reflect.DeepEqual(omp.Spec.Template.Spec.Template.Spec, oldOpenStackMachinePool.Spec.Template.Spec.Template.Spec) {
+		allErrs = append(allErrs,
+			field.Invalid(field.NewPath("spec", "template", "spec", "template", "spec"), omp, infrav1.OpenStackMachineTemplateImmutableMsg),
+		)
+	}
+
+	return aggregateObjErrors(omp.GroupVersionKind().GroupKind(), omp.Name, allErrs)
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (omp *OpenStackMachinePool) ValidateDelete() error {
 	openstackmachinepoollog.Info("validate delete", "name", omp.Name)
-	return nil
-}
-
-// Validate the Azure Machine Pool and return an aggregate error
-func (omp *OpenStackMachinePool) Validate() error {
-	validators := []func() error{
-		omp.ValidateImage,
-	}
-
-	var errs []error
-	for _, validator := range validators {
-		if err := validator(); err != nil {
-			errs = append(errs, err)
-		}
-	}
-
-	if len(errs) > 0 {
-		return kerrors.NewAggregate(errs)
-	}
-
-	return nil
-}
-
-// ValidateImage of an OpenStackMachinePool
-func (omp *OpenStackMachinePool) ValidateImage() error {
 	return nil
 }

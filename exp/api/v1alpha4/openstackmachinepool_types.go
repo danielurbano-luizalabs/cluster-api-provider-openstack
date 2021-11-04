@@ -21,32 +21,13 @@ import (
 )
 
 type (
-	OpenStackMachineTemplate struct {
-		// VMSize is the size of the Virtual Machine to build.
-		// See https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#virtualmachinesizetypes
-		VMSize string `json:"vmSize"`
-
-		// Image is used to provide details of an image to use during Virtual Machine creation.
-		// If image details are omitted the image will default the Azure Marketplace "capi" offer,
-		// which is based on Ubuntu.
-		// +kubebuilder:validation:nullable
-		// +optional
-		Instance *infrav1.Instance `json:"instance,omitempty"`
-
-		// OSDisk contains the operating system disk information for a Virtual Machine
-		RootVolume infrav1.RootVolume `json:"rootVolume"`
-
-		// SSHPublicKey is the SSH public key string base64 encoded to add to a Virtual Machine
-		SSHPublicKey string `json:"sshPublicKey"`
-	}
-
 	// OpenStackMachinePoolSpec defines the desired state of OpenStackMachinePool
 	OpenStackMachinePoolSpec struct {
 		// Location is the Azure region location e.g. westus2
 		Location string `json:"location"`
 
 		// Template contains the details used to build a replica virtual machine within the Machine Pool
-		Template OpenStackMachineTemplate `json:"template"`
+		Template infrav1.OpenStackMachineTemplate `json:"template"`
 
 		// AdditionalTags is an optional set of tags to add to an instance, in addition to the ones added by default by the
 		// Azure provider. If both the AzureCluster and the AzureMachine specify the same tag name with different values, the
