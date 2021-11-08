@@ -41,6 +41,10 @@ var _ webhook.Defaulter = &OpenStackMachinePool{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (omp *OpenStackMachinePool) Default() {
 	openstackmachinepoollog.Info("default", "name", omp.Name)
+
+	if omp.Spec.Template.Spec.Template.Spec.IdentityRef != nil && omp.Spec.Template.Spec.Template.Spec.IdentityRef.Kind == "" {
+		omp.Spec.Template.Spec.Template.Spec.IdentityRef.Kind = defaultIdentityRefKind
+	}
 }
 
 // +kubebuilder:webhook:verbs=create;update,path=/validate-exp-cluster-x-k8s-io-v1alpha4-openstackmachinepool,mutating=false,failurePolicy=fail,matchPolicy=Equivalent,groups=exp.cluster.x-k8s.io,resources=openstackmachinepools,versions=v1alpha4,name=validation.openstackmachinepool.exp.infrastructure.cluster.x-k8s.io

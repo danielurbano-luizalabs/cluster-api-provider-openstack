@@ -23,7 +23,7 @@ import (
 type (
 	// OpenStackMachinePoolSpec defines the desired state of OpenStackMachinePool
 	OpenStackMachinePoolSpec struct {
-		// Location is the Azure region location e.g. westus2
+		// Location is the Openstack region location e.g. westus2
 		Location string `json:"location"`
 
 		// Template contains the details used to build a replica virtual machine within the Machine Pool
