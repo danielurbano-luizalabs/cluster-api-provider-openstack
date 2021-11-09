@@ -25,7 +25,7 @@ spec:
       jsonPath: .status.ready
       name: Ready
       type: string
-    - description: OpenStack VMSS provisioning state
+    - description: Openstack provisioning state
       jsonPath: .status.provisioningState
       name: State
       type: string
@@ -39,20 +39,11 @@ spec:
       name: MachinePool
       priority: 1
       type: string
-    - description: OpenStack VMSS ID
-      jsonPath: .spec.providerID
-      name: VMSS ID
-      priority: 1
-      type: string
-    - description: OpenStack VM Size
-      jsonPath: .spec.template.vmSize
-      name: VM Size
-      priority: 1
-      type: string
     name: v1alpha3
     schema:
       openAPIV3Schema:
-        description: OpenStackMachinePool is the Schema for the openstackmachinepools API
+        description: OpenStackMachinePool is the Schema for the openstackmachinepools
+          API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -70,16 +61,16 @@ spec:
             description: OpenStackMachinePoolSpec defines the desired state of OpenStackMachinePool
             properties:
               additionalTags:
-                additionalProperties:
-                  type: string
                 description: AdditionalTags is an optional set of tags to add to an
                   instance, in addition to the ones added by default by the OpenStack
-                  provider. If both the OpenStackCluster and the OpenStackMachine specify
-                  the same tag name with different values, the OpenStackMachine's value
-                  takes precedence.
-                type: object
+                  provider. If both the OpenStackCluster and the OpenStackMachine
+                  specify the same tag name with different values, the OpenStackMachine's
+                  value takes precedence.
+                items:
+                  type: string
+                type: array
               location:
-                description: Location is the OpenStack region location e.g. westus2
+                description: Location is the Openstack region location e.g. westus2
                 type: string
               providerID:
                 description: ProviderID is the identification ID of the Virtual Machine
@@ -97,133 +88,866 @@ spec:
                 description: Template contains the details used to build a replica
                   virtual machine within the Machine Pool
                 properties:
-                  image:
-                    description: Image is used to provide details of an image to use
-                      during Virtual Machine creation. If image details are omitted
-                      the image will default the OpenStack Marketplace "capi" offer, which
-                      is based on Ubuntu.
-                    properties:
-                      id:
-                        description: ID specifies an image to use by ID
-                        type: string
-                      marketplace:
-                        description: Marketplace specifies an image to use from the
-                          OpenStack Marketplace
-                        properties:
-                          offer:
-                            description: Offer specifies the name of a group of related
-                              images created by the publisher. For example, UbuntuServer,
-                              WindowsServer
-                            minLength: 1
-                            type: string
-                          publisher:
-                            description: Publisher is the name of the organization
-                              that created the image
-                            minLength: 1
-                            type: string
-                          sku:
-                            description: SKU specifies an instance of an offer, such
-                              as a major release of a distribution. For example, 18.04-LTS,
-                              2019-Datacenter
-                            minLength: 1
-                            type: string
-                          version:
-                            description: Version specifies the version of an image
-                              sku. The allowed formats are Major.Minor.Build or 'latest'.
-                              Major, Minor, and Build are decimal numbers. Specify
-                              'latest' to use the latest version of an image available
-                              at deploy time. Even if you use 'latest', the VM image
-                              will not automatically update after deploy time even
-                              if a new version becomes available.
-                            minLength: 1
-                            type: string
-                        required:
-                        - offer
-                        - publisher
-                        - sku
-                        - version
-                        type: object
-                      sharedGallery:
-                        description: SharedGallery specifies an image to use from
-                          an OpenStack Shared Image Gallery
-                        properties:
-                          gallery:
-                            description: Gallery specifies the name of the shared
-                              image gallery that contains the image
-                            minLength: 1
-                            type: string
-                          name:
-                            description: Name is the name of the image
-                            minLength: 1
-                            type: string
-                          resourceGroup:
-                            description: ResourceGroup specifies the resource group
-                              containing the shared image gallery
-                            minLength: 1
-                            type: string
-                          subscriptionID:
-                            description: SubscriptionID is the identifier of the subscription
-                              that contains the shared image gallery
-                            minLength: 1
-                            type: string
-                          version:
-                            description: Version specifies the version of the marketplace
-                              image. The allowed formats are Major.Minor.Build or
-                              'latest'. Major, Minor, and Build are decimal numbers.
-                              Specify 'latest' to use the latest version of an image
-                              available at deploy time. Even if you use 'latest',
-                              the VM image will not automatically update after deploy
-                              time even if a new version becomes available.
-                            minLength: 1
-                            type: string
-                        required:
-                        - gallery
-                        - name
-                        - resourceGroup
-                        - subscriptionID
-                        - version
-                        type: object
+                  apiVersion:
+                    description: 'APIVersion defines the versioned schema of this
+                      representation of an object. Servers should convert recognized
+                      schemas to the latest internal value, and may reject unrecognized
+                      values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+                    type: string
+                  kind:
+                    description: 'Kind is a string value representing the REST resource
+                      this object represents. Servers may infer this from the endpoint
+                      the client submits requests to. Cannot be updated. In CamelCase.
+                      More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                    type: string
+                  metadata:
                     type: object
-                  osDisk:
-                    description: OSDisk contains the operating system disk information
-                      for a Virtual Machine
+                  spec:
+                    description: OpenStackMachineTemplateSpec defines the desired
+                      state of OpenStackMachineTemplate.
                     properties:
-                      diskSizeGB:
-                        format: int32
-                        type: integer
-                      managedDisk:
+                      template:
+                        description: OpenStackMachineTemplateResource describes the
+                          data needed to create a OpenStackMachine from a template.
                         properties:
-                          storageAccountType:
-                            type: string
+                          spec:
+                            description: Spec is the specification of the desired
+                              behavior of the machine.
+                            properties:
+                              cloudName:
+                                description: The name of the cloud to use from the
+                                  clouds secret
+                                type: string
+                              configDrive:
+                                description: Config Drive support
+                                type: boolean
+                              flavor:
+                                description: The flavor reference for the flavor for
+                                  your server instance.
+                                type: string
+                              floatingIP:
+                                description: The floatingIP which will be associated
+                                  to the machine, only used for master. The floatingIP
+                                  should have been created and haven't been associated.
+                                type: string
+                              identityRef:
+                                description: IdentityRef is a reference to a identity
+                                  to be used when reconciling this cluster
+                                properties:
+                                  kind:
+                                    description: Kind of the identity. Must be supported
+                                      by the infrastructure provider and may be either
+                                      cluster or namespace-scoped.
+                                    minLength: 1
+                                    type: string
+                                  name:
+                                    description: Name of the infrastructure identity
+                                      to be used. Must be either a cluster-scoped
+                                      resource, or namespaced-scoped resource the
+                                      same namespace as the resource(s) being provisioned.
+                                    type: string
+                                required:
+                                - kind
+                                - name
+                                type: object
+                              image:
+                                description: The name of the image to use for your
+                                  server instance. If the RootVolume is specified,
+                                  this will be ignored and use rootVolume directly.
+                                type: string
+                              instanceID:
+                                description: InstanceID is the OpenStack instance
+                                  ID for this machine.
+                                type: string
+                              networks:
+                                description: A networks object. Required parameter
+                                  when there are multiple networks defined for the
+                                  tenant. When you do not specify both networks and
+                                  ports parameters, the server attaches to the only
+                                  network created for the current tenant.
+                                items:
+                                  properties:
+                                    filter:
+                                      description: Filters for optional network query
+                                      properties:
+                                        adminStateUp:
+                                          type: boolean
+                                        description:
+                                          type: string
+                                        id:
+                                          type: string
+                                        limit:
+                                          type: integer
+                                        marker:
+                                          type: string
+                                        name:
+                                          type: string
+                                        notTags:
+                                          type: string
+                                        notTagsAny:
+                                          type: string
+                                        projectId:
+                                          type: string
+                                        shared:
+                                          type: boolean
+                                        sortDir:
+                                          type: string
+                                        sortKey:
+                                          type: string
+                                        status:
+                                          type: string
+                                        tags:
+                                          type: string
+                                        tagsAny:
+                                          type: string
+                                        tenantId:
+                                          type: string
+                                      type: object
+                                    fixedIP:
+                                      description: A fixed IPv4 address for the NIC.
+                                      type: string
+                                    subnets:
+                                      description: Subnet within a network to use
+                                      items:
+                                        properties:
+                                          filter:
+                                            description: Filters for optional network
+                                              query
+                                            properties:
+                                              cidr:
+                                                type: string
+                                              description:
+                                                type: string
+                                              enableDhcp:
+                                                type: boolean
+                                              gateway_ip:
+                                                type: string
+                                              id:
+                                                type: string
+                                              ipVersion:
+                                                type: integer
+                                              ipv6AddressMode:
+                                                type: string
+                                              ipv6RaMode:
+                                                type: string
+                                              limit:
+                                                type: integer
+                                              marker:
+                                                type: string
+                                              name:
+                                                type: string
+                                              networkId:
+                                                type: string
+                                              notTags:
+                                                type: string
+                                              notTagsAny:
+                                                type: string
+                                              projectId:
+                                                type: string
+                                              sortDir:
+                                                type: string
+                                              sortKey:
+                                                type: string
+                                              subnetpoolId:
+                                                type: string
+                                              tags:
+                                                type: string
+                                              tagsAny:
+                                                type: string
+                                              tenantId:
+                                                type: string
+                                            type: object
+                                          uuid:
+                                            description: The UUID of the network.
+                                              Required if you omit the port attribute.
+                                            type: string
+                                        type: object
+                                      type: array
+                                    uuid:
+                                      description: The UUID of the network. Required
+                                        if you omit the port attribute.
+                                      type: string
+                                  type: object
+                                type: array
+                              ports:
+                                description: Ports to be attached to the server instance.
+                                  They are created if a port with the given name does
+                                  not already exist. When you do not specify both
+                                  networks and ports parameters, the server attaches
+                                  to the only network created for the current tenant.
+                                items:
+                                  properties:
+                                    adminStateUp:
+                                      type: boolean
+                                    allowedAddressPairs:
+                                      items:
+                                        properties:
+                                          ipAddress:
+                                            type: string
+                                          macAddress:
+                                            type: string
+                                        type: object
+                                      type: array
+                                    description:
+                                      type: string
+                                    disablePortSecurity:
+                                      description: DisablePortSecurity enables or
+                                        disables the port security when set. When
+                                        not set, it takes the value of the corresponding
+                                        field at the network level.
+                                      type: boolean
+                                    fixedIPs:
+                                      description: Specify pairs of subnet and/or
+                                        IP address. These should be subnets of the
+                                        network with the given NetworkID.
+                                      items:
+                                        properties:
+                                          ipAddress:
+                                            type: string
+                                          subnetId:
+                                            type: string
+                                        required:
+                                        - subnetId
+                                        type: object
+                                      type: array
+                                    hostId:
+                                      description: The ID of the host where the port
+                                        is allocated
+                                      type: string
+                                    macAddress:
+                                      type: string
+                                    nameSuffix:
+                                      description: Used to make the name of the port
+                                        unique. If unspecified, instead the 0-based
+                                        index of the port in the list is used.
+                                      type: string
+                                    networkId:
+                                      description: ID of the OpenStack network on
+                                        which to create the port. If unspecified,
+                                        create the port on the default cluster network.
+                                      type: string
+                                    profile:
+                                      additionalProperties:
+                                        type: string
+                                      description: A dictionary that enables the application
+                                        running on the specified host to pass and
+                                        receive virtual network interface (VIF) port-specific
+                                        information to the plug-in.
+                                      type: object
+                                    projectId:
+                                      type: string
+                                    securityGroups:
+                                      items:
+                                        type: string
+                                      type: array
+                                    tenantId:
+                                      type: string
+                                    trunk:
+                                      description: Enables and disables trunk at port
+                                        level. If not provided, openStackMachine.Spec.Trunk
+                                        is inherited.
+                                      type: boolean
+                                    vnicType:
+                                      description: The virtual network interface card
+                                        (vNIC) type that is bound to the neutron port.
+                                      type: string
+                                  type: object
+                                type: array
+                              providerID:
+                                description: ProviderID is the unique identifier as
+                                  specified by the cloud provider.
+                                type: string
+                              rootVolume:
+                                description: The volume metadata to boot from
+                                properties:
+                                  deviceType:
+                                    type: string
+                                  diskSize:
+                                    type: integer
+                                  sourceType:
+                                    type: string
+                                  sourceUUID:
+                                    type: string
+                                type: object
+                              securityGroups:
+                                description: The names of the security groups to assign
+                                  to the instance
+                                items:
+                                  properties:
+                                    filter:
+                                      description: Filters used to query security
+                                        groups in openstack
+                                      properties:
+                                        description:
+                                          type: string
+                                        id:
+                                          type: string
+                                        limit:
+                                          type: integer
+                                        marker:
+                                          type: string
+                                        name:
+                                          type: string
+                                        notTags:
+                                          type: string
+                                        notTagsAny:
+                                          type: string
+                                        projectId:
+                                          type: string
+                                        sortDir:
+                                          type: string
+                                        sortKey:
+                                          type: string
+                                        tags:
+                                          type: string
+                                        tagsAny:
+                                          type: string
+                                        tenantId:
+                                          type: string
+                                      type: object
+                                    name:
+                                      description: Security Group name
+                                      type: string
+                                    uuid:
+                                      description: Security Group UID
+                                      type: string
+                                  type: object
+                                type: array
+                              serverGroupID:
+                                description: The server group to assign the machine
+                                  to
+                                type: string
+                              serverMetadata:
+                                additionalProperties:
+                                  type: string
+                                description: Metadata mapping. Allows you to create
+                                  a map of key value pairs to add to the server instance.
+                                type: object
+                              sshKeyName:
+                                description: The ssh key to inject in the instance
+                                type: string
+                              subnet:
+                                description: UUID, IP address of a port from this
+                                  subnet will be marked as AccessIPv4 on the created
+                                  compute instance
+                                type: string
+                              tags:
+                                description: Machine tags Requires Nova api 2.52 minimum!
+                                items:
+                                  type: string
+                                type: array
+                              trunk:
+                                description: Whether the server instance is created
+                                  on a trunk port or not.
+                                type: boolean
+                            required:
+                            - flavor
+                            type: object
                         required:
-                        - storageAccountType
+                        - spec
                         type: object
-                      osType:
-                        type: string
                     required:
-                    - diskSizeGB
-                    - managedDisk
-                    - osType
+                    - template
                     type: object
-                  sshPublicKey:
-                    description: SSHPublicKey is the SSH public key string base64
-                      encoded to add to a Virtual Machine
-                    type: string
-                  vmSize:
-                    description: VMSize is the size of the Virtual Machine to build.
-                      See https://docs.microsoft.com/en-us/rest/api/compute/virtualmachines/createorupdate#virtualmachinesizetypes
-                    type: string
-                required:
-                - osDisk
-                - sshPublicKey
-                - vmSize
                 type: object
             required:
             - location
             - template
             type: object
           status:
-            description: OpenStackMachinePoolStatus defines the observed state of OpenStackMachinePool
+            description: OpenStackMachinePoolStatus defines the observed state of
+              OpenStackMachinePool
+            properties:
+              failureMessage:
+                description: "ErrorMessage will be set in the event that there is
+                  a terminal problem reconciling the MachinePool and will contain
+                  a more verbose string suitable for logging and human consumption.
+                  \n This field should not be set for transitive errors that a controller
+                  faces that are expected to be fixed automatically over time (like
+                  service outages), but instead indicate that something is fundamentally
+                  wrong with the MachinePool's spec or the configuration of the controller,
+                  and that manual intervention is required. Examples of terminal errors
+                  would be invalid combinations of settings in the spec, values that
+                  are unsupported by the controller, or the responsible controller
+                  itself being critically misconfigured. \n Any transient errors that
+                  occur during the reconciliation of MachinePools can be added as
+                  events to the MachinePool object and/or logged in the controller's
+                  output."
+                type: string
+              failureReason:
+                description: "ErrorReason will be set in the event that there is a
+                  terminal problem reconciling the MachinePool and will contain a
+                  succinct value suitable for machine interpretation. \n This field
+                  should not be set for transitive errors that a controller faces
+                  that are expected to be fixed automatically over time (like service
+                  outages), but instead indicate that something is fundamentally wrong
+                  with the MachinePool's spec or the configuration of the controller,
+                  and that manual intervention is required. Examples of terminal errors
+                  would be invalid combinations of settings in the spec, values that
+                  are unsupported by the controller, or the responsible controller
+                  itself being critically misconfigured. \n Any transient errors that
+                  occur during the reconciliation of MachinePools can be added as
+                  events to the MachinePool object and/or logged in the controller's
+                  output."
+                type: string
+              provisioningState:
+                description: VMState is the provisioning state of the OpenStack virtual
+                  machine.
+                type: string
+              ready:
+                description: Ready is true when the provider resource is ready.
+                type: boolean
+              replicas:
+                description: Replicas is the most recently observed number of replicas.
+                format: int32
+                type: integer
+            type: object
+        type: object
+    served: true
+    storage: false
+    subresources:
+      status: {}
+  - additionalPrinterColumns:
+    - description: OpenStackMachinePool replicas count
+      jsonPath: .status.replicas
+      name: Replicas
+      type: string
+    - description: OpenStackMachinePool replicas count
+      jsonPath: .status.ready
+      name: Ready
+      type: string
+    - description: Openstack provisioning state
+      jsonPath: .status.provisioningState
+      name: State
+      type: string
+    - description: Cluster to which this OpenStackMachinePool belongs
+      jsonPath: .metadata.labels.cluster\.x-k8s\.io/cluster-name
+      name: Cluster
+      priority: 1
+      type: string
+    - description: MachinePool object to which this OpenStackMachinePool belongs
+      jsonPath: .metadata.ownerReferences[?(@.kind=="MachinePool")].name
+      name: MachinePool
+      priority: 1
+      type: string
+    name: v1alpha4
+    schema:
+      openAPIV3Schema:
+        description: OpenStackMachinePool is the Schema for the openstackmachinepools
+          API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: OpenStackMachinePoolSpec defines the desired state of OpenStackMachinePool
+            properties:
+              additionalTags:
+                description: AdditionalTags is an optional set of tags to add to an
+                  instance, in addition to the ones added by default by the OpenStack
+                  provider. If both the OpenStackCluster and the OpenStackMachine
+                  specify the same tag name with different values, the OpenStackMachine's
+                  value takes precedence.
+                items:
+                  type: string
+                type: array
+              location:
+                description: Location is the Openstack region location e.g. westus2
+                type: string
+              providerID:
+                description: ProviderID is the identification ID of the Virtual Machine
+                  Scale Set
+                type: string
+              providerIDList:
+                description: ProviderIDList are the identification IDs of machine
+                  instances provided by the provider. This field must match the provider
+                  IDs as seen on the node objects corresponding to a machine pool's
+                  machine instances.
+                items:
+                  type: string
+                type: array
+              template:
+                description: Template contains the details used to build a replica
+                  virtual machine within the Machine Pool
+                properties:
+                  apiVersion:
+                    description: 'APIVersion defines the versioned schema of this
+                      representation of an object. Servers should convert recognized
+                      schemas to the latest internal value, and may reject unrecognized
+                      values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+                    type: string
+                  kind:
+                    description: 'Kind is a string value representing the REST resource
+                      this object represents. Servers may infer this from the endpoint
+                      the client submits requests to. Cannot be updated. In CamelCase.
+                      More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+                    type: string
+                  metadata:
+                    type: object
+                  spec:
+                    description: OpenStackMachineTemplateSpec defines the desired
+                      state of OpenStackMachineTemplate.
+                    properties:
+                      template:
+                        description: OpenStackMachineTemplateResource describes the
+                          data needed to create a OpenStackMachine from a template.
+                        properties:
+                          spec:
+                            description: Spec is the specification of the desired
+                              behavior of the machine.
+                            properties:
+                              cloudName:
+                                description: The name of the cloud to use from the
+                                  clouds secret
+                                type: string
+                              configDrive:
+                                description: Config Drive support
+                                type: boolean
+                              flavor:
+                                description: The flavor reference for the flavor for
+                                  your server instance.
+                                type: string
+                              floatingIP:
+                                description: The floatingIP which will be associated
+                                  to the machine, only used for master. The floatingIP
+                                  should have been created and haven't been associated.
+                                type: string
+                              identityRef:
+                                description: IdentityRef is a reference to a identity
+                                  to be used when reconciling this cluster
+                                properties:
+                                  kind:
+                                    description: Kind of the identity. Must be supported
+                                      by the infrastructure provider and may be either
+                                      cluster or namespace-scoped.
+                                    minLength: 1
+                                    type: string
+                                  name:
+                                    description: Name of the infrastructure identity
+                                      to be used. Must be either a cluster-scoped
+                                      resource, or namespaced-scoped resource the
+                                      same namespace as the resource(s) being provisioned.
+                                    type: string
+                                required:
+                                - kind
+                                - name
+                                type: object
+                              image:
+                                description: The name of the image to use for your
+                                  server instance. If the RootVolume is specified,
+                                  this will be ignored and use rootVolume directly.
+                                type: string
+                              instanceID:
+                                description: InstanceID is the OpenStack instance
+                                  ID for this machine.
+                                type: string
+                              networks:
+                                description: A networks object. Required parameter
+                                  when there are multiple networks defined for the
+                                  tenant. When you do not specify both networks and
+                                  ports parameters, the server attaches to the only
+                                  network created for the current tenant.
+                                items:
+                                  properties:
+                                    filter:
+                                      description: Filters for optional network query
+                                      properties:
+                                        adminStateUp:
+                                          type: boolean
+                                        description:
+                                          type: string
+                                        id:
+                                          type: string
+                                        limit:
+                                          type: integer
+                                        marker:
+                                          type: string
+                                        name:
+                                          type: string
+                                        notTags:
+                                          type: string
+                                        notTagsAny:
+                                          type: string
+                                        projectId:
+                                          type: string
+                                        shared:
+                                          type: boolean
+                                        sortDir:
+                                          type: string
+                                        sortKey:
+                                          type: string
+                                        status:
+                                          type: string
+                                        tags:
+                                          type: string
+                                        tagsAny:
+                                          type: string
+                                        tenantId:
+                                          type: string
+                                      type: object
+                                    fixedIP:
+                                      description: A fixed IPv4 address for the NIC.
+                                      type: string
+                                    subnets:
+                                      description: Subnet within a network to use
+                                      items:
+                                        properties:
+                                          filter:
+                                            description: Filters for optional network
+                                              query
+                                            properties:
+                                              cidr:
+                                                type: string
+                                              description:
+                                                type: string
+                                              enableDhcp:
+                                                type: boolean
+                                              gateway_ip:
+                                                type: string
+                                              id:
+                                                type: string
+                                              ipVersion:
+                                                type: integer
+                                              ipv6AddressMode:
+                                                type: string
+                                              ipv6RaMode:
+                                                type: string
+                                              limit:
+                                                type: integer
+                                              marker:
+                                                type: string
+                                              name:
+                                                type: string
+                                              networkId:
+                                                type: string
+                                              notTags:
+                                                type: string
+                                              notTagsAny:
+                                                type: string
+                                              projectId:
+                                                type: string
+                                              sortDir:
+                                                type: string
+                                              sortKey:
+                                                type: string
+                                              subnetpoolId:
+                                                type: string
+                                              tags:
+                                                type: string
+                                              tagsAny:
+                                                type: string
+                                              tenantId:
+                                                type: string
+                                            type: object
+                                          uuid:
+                                            description: The UUID of the network.
+                                              Required if you omit the port attribute.
+                                            type: string
+                                        type: object
+                                      type: array
+                                    uuid:
+                                      description: The UUID of the network. Required
+                                        if you omit the port attribute.
+                                      type: string
+                                  type: object
+                                type: array
+                              ports:
+                                description: Ports to be attached to the server instance.
+                                  They are created if a port with the given name does
+                                  not already exist. When you do not specify both
+                                  networks and ports parameters, the server attaches
+                                  to the only network created for the current tenant.
+                                items:
+                                  properties:
+                                    adminStateUp:
+                                      type: boolean
+                                    allowedAddressPairs:
+                                      items:
+                                        properties:
+                                          ipAddress:
+                                            type: string
+                                          macAddress:
+                                            type: string
+                                        type: object
+                                      type: array
+                                    description:
+                                      type: string
+                                    disablePortSecurity:
+                                      description: DisablePortSecurity enables or
+                                        disables the port security when set. When
+                                        not set, it takes the value of the corresponding
+                                        field at the network level.
+                                      type: boolean
+                                    fixedIPs:
+                                      description: Specify pairs of subnet and/or
+                                        IP address. These should be subnets of the
+                                        network with the given NetworkID.
+                                      items:
+                                        properties:
+                                          ipAddress:
+                                            type: string
+                                          subnetId:
+                                            type: string
+                                        required:
+                                        - subnetId
+                                        type: object
+                                      type: array
+                                    hostId:
+                                      description: The ID of the host where the port
+                                        is allocated
+                                      type: string
+                                    macAddress:
+                                      type: string
+                                    nameSuffix:
+                                      description: Used to make the name of the port
+                                        unique. If unspecified, instead the 0-based
+                                        index of the port in the list is used.
+                                      type: string
+                                    networkId:
+                                      description: ID of the OpenStack network on
+                                        which to create the port. If unspecified,
+                                        create the port on the default cluster network.
+                                      type: string
+                                    profile:
+                                      additionalProperties:
+                                        type: string
+                                      description: A dictionary that enables the application
+                                        running on the specified host to pass and
+                                        receive virtual network interface (VIF) port-specific
+                                        information to the plug-in.
+                                      type: object
+                                    projectId:
+                                      type: string
+                                    securityGroups:
+                                      items:
+                                        type: string
+                                      type: array
+                                    tenantId:
+                                      type: string
+                                    trunk:
+                                      description: Enables and disables trunk at port
+                                        level. If not provided, openStackMachine.Spec.Trunk
+                                        is inherited.
+                                      type: boolean
+                                    vnicType:
+                                      description: The virtual network interface card
+                                        (vNIC) type that is bound to the neutron port.
+                                      type: string
+                                  type: object
+                                type: array
+                              providerID:
+                                description: ProviderID is the unique identifier as
+                                  specified by the cloud provider.
+                                type: string
+                              rootVolume:
+                                description: The volume metadata to boot from
+                                properties:
+                                  deviceType:
+                                    type: string
+                                  diskSize:
+                                    type: integer
+                                  sourceType:
+                                    type: string
+                                  sourceUUID:
+                                    type: string
+                                type: object
+                              securityGroups:
+                                description: The names of the security groups to assign
+                                  to the instance
+                                items:
+                                  properties:
+                                    filter:
+                                      description: Filters used to query security
+                                        groups in openstack
+                                      properties:
+                                        description:
+                                          type: string
+                                        id:
+                                          type: string
+                                        limit:
+                                          type: integer
+                                        marker:
+                                          type: string
+                                        name:
+                                          type: string
+                                        notTags:
+                                          type: string
+                                        notTagsAny:
+                                          type: string
+                                        projectId:
+                                          type: string
+                                        sortDir:
+                                          type: string
+                                        sortKey:
+                                          type: string
+                                        tags:
+                                          type: string
+                                        tagsAny:
+                                          type: string
+                                        tenantId:
+                                          type: string
+                                      type: object
+                                    name:
+                                      description: Security Group name
+                                      type: string
+                                    uuid:
+                                      description: Security Group UID
+                                      type: string
+                                  type: object
+                                type: array
+                              serverGroupID:
+                                description: The server group to assign the machine
+                                  to
+                                type: string
+                              serverMetadata:
+                                additionalProperties:
+                                  type: string
+                                description: Metadata mapping. Allows you to create
+                                  a map of key value pairs to add to the server instance.
+                                type: object
+                              sshKeyName:
+                                description: The ssh key to inject in the instance
+                                type: string
+                              subnet:
+                                description: UUID, IP address of a port from this
+                                  subnet will be marked as AccessIPv4 on the created
+                                  compute instance
+                                type: string
+                              tags:
+                                description: Machine tags Requires Nova api 2.52 minimum!
+                                items:
+                                  type: string
+                                type: array
+                              trunk:
+                                description: Whether the server instance is created
+                                  on a trunk port or not.
+                                type: boolean
+                            required:
+                            - flavor
+                            type: object
+                        required:
+                        - spec
+                        type: object
+                    required:
+                    - template
+                    type: object
+                type: object
+            required:
+            - location
+            - template
+            type: object
+          status:
+            description: OpenStackMachinePoolStatus defines the observed state of
+              OpenStackMachinePool
             properties:
               failureMessage:
                 description: "ErrorMessage will be set in the event that there is

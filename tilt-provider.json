@@ -9,7 +9,8 @@
         "api",
         "config",
         "controllers",
-        "pkg"
+        "pkg",
+        "exp"
       ]
     }
 }

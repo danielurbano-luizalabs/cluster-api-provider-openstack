@@ -30,8 +30,8 @@ type (
 		Template infrav1.OpenStackMachineTemplate `json:"template"`
 
 		// AdditionalTags is an optional set of tags to add to an instance, in addition to the ones added by default by the
-		// Azure provider. If both the AzureCluster and the AzureMachine specify the same tag name with different values, the
-		// AzureMachine's value takes precedence.
+		// OpenStack provider. If both the OpenStackCluster and the OpenStackMachine specify the same tag name with different values, the
+		// OpenStackMachine's value takes precedence.
 		// +optional
 		AdditionalTags []string `json:"additionalTags,omitempty"`
 
@@ -54,7 +54,7 @@ type (
 		// +optional
 		Replicas int32 `json:"replicas"`
 
-		// VMState is the provisioning state of the Azure virtual machine.
+		// VMState is the provisioning state of the OpenStack virtual machine.
 		// +optional
 		ProvisioningState *infrav1.InstanceState `json:"provisioningState,omitempty"`
 
@@ -99,13 +99,11 @@ type (
 
 	// +kubebuilder:object:root=true
 	// +kubebuilder:subresource:status
-	// +kubebuilder:printcolumn:name="Replicas",type="string",JSONPath=".status.replicas",description="AzureMachinePool replicas count"
-	// +kubebuilder:printcolumn:name="Ready",type="string",JSONPath=".status.ready",description="AzureMachinePool replicas count"
-	// +kubebuilder:printcolumn:name="State",type="string",JSONPath=".status.provisioningState",description="Azure VMSS provisioning state"
-	// +kubebuilder:printcolumn:name="Cluster",type="string",priority=1,JSONPath=".metadata.labels.cluster\\.x-k8s\\.io/cluster-name",description="Cluster to which this AzureMachinePool belongs"
-	// +kubebuilder:printcolumn:name="MachinePool",type="string",priority=1,JSONPath=".metadata.ownerReferences[?(@.kind==\"MachinePool\")].name",description="MachinePool object to which this AzureMachinePool belongs"
-	// +kubebuilder:printcolumn:name="VMSS ID",type="string",priority=1,JSONPath=".spec.providerID",description="Azure VMSS ID"
-	// +kubebuilder:printcolumn:name="VM Size",type="string",priority=1,JSONPath=".spec.template.vmSize",description="Azure VM Size"
+	// +kubebuilder:printcolumn:name="Replicas",type="string",JSONPath=".status.replicas",description="OpenStackMachinePool replicas count"
+	// +kubebuilder:printcolumn:name="Ready",type="string",JSONPath=".status.ready",description="OpenStackMachinePool replicas count"
+	// +kubebuilder:printcolumn:name="State",type="string",JSONPath=".status.provisioningState",description="Openstack provisioning state"
+	// +kubebuilder:printcolumn:name="Cluster",type="string",priority=1,JSONPath=".metadata.labels.cluster\\.x-k8s\\.io/cluster-name",description="Cluster to which this OpenStackMachinePool belongs"
+	// +kubebuilder:printcolumn:name="MachinePool",type="string",priority=1,JSONPath=".metadata.ownerReferences[?(@.kind==\"MachinePool\")].name",description="MachinePool object to which this OpenStackMachinePool belongs"
 
 	// OpenStackMachinePool is the Schema for the openstackmachinepools API
 	OpenStackMachinePool struct {
